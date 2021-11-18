@@ -1,1 +1,3 @@
-hello
+# README
+
+Notes from ArgoRollout build.

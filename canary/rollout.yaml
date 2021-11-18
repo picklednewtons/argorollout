@@ -1,0 +1,97 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: canary
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rollout-api
+  namespace: canary
+spec:
+  selector:
+    app: rollout-api
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: rollout-api
+  namespace: canary
+spec:
+  replicas: 5
+  strategy:
+    canary:
+      steps:
+      - setWeight: 20
+      - pause: {}
+      - setWeight: 40
+      - pause: {duration: 10}
+      - setWeight: 60
+      - pause: {duration: 10}
+      - setWeight: 80
+      - pause: {duration: 10}
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: rollout-api
+  template:
+    metadata:
+      labels:
+        app: rollout-api
+    spec:
+      containers:
+        - name: api
+          image: andersonstu/testservice:v1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: rollout-web
+#   namespace: canary
+# spec:
+#   ports:
+#   - port: 8080
+#     targetPort: 8080
+#     protocol: TCP
+#   selector:
+#     app: rollout-web
+# ---
+# apiVersion: argoproj.io/v1alpha1
+# kind: Rollout
+# metadata:
+#   name: rollout-web
+#   namespace: canary
+# spec:
+#   replicas: 5
+#   strategy:
+#     canary:
+#       steps:
+#       - setWeight: 20
+#       - pause: {}
+#       - setWeight: 40
+#       - pause: {duration: 10}
+#       - setWeight: 60
+#       - pause: {duration: 10}
+#       - setWeight: 80
+#       - pause: {duration: 10}
+#   revisionHistoryLimit: 2
+#   selector:
+#     matchLabels:
+#       app: rollout-web
+#   template:
+#     metadata:
+#       labels:
+#         app: rollout-web
+#     spec:
+#       containers:
+#         - name: web
+#           image: andersonstu/testservice:v1
+#           ports:
+#             - containerPort: 8080
