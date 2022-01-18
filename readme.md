@@ -35,6 +35,7 @@ kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-rollouts/master
 Demo rollout commands:
 
 ```bash
+kubectl argo rollouts list rollouts
 kubectl argo rollouts get rollout rollouts-demo --watch
 kubectl argo rollouts set image rollouts-demo rollouts-demo=argoproj/rollouts-demo:yellow
 kubectl argo rollouts promote rollouts-demo
@@ -47,11 +48,43 @@ BlakYaks demo:
 
 > https://github.com/picklednewtons/argorollout
 
+
+BlueGreen
+
 ```bash
-kubectl apply -f rollout.yaml
-kubectl argo rollouts set image rollout-bluegreen rollouts-demo=argoproj/rollouts-demo:yellow --namespace bg
-kubectl argo rollouts promote rollout-bluegreen --namespace bg
-kubectl argo rollouts set image rollout-bluegreen rollouts-demo=argoproj/rollouts-demo:red --namespace bg
+kubectl argo rollouts list rollouts -A
+kubectl argo rollouts dashboard
+
+kubectl apply -f bluegreen/rollout.yaml
+kubectl argo rollouts get rollout rollout-bluegreen --namespace bluegreen --watch
+
+kubectl argo rollouts set image rollout-bluegreen rollouts-demo=argoproj/rollouts-demo:green --namespace bluegreen
+kubectl argo rollouts promote rollout-bluegreen --namespace bluegreen
+
+kubectl argo rollouts abort rollout-bluegreen --namespace bluegreen
+
+kubectl argo rollouts set image rollout-bluegreen rollouts-demo=argoproj/rollouts-demo:red --namespace bluegreen
+
+kubectl delete -f bluegreen/rollout.yaml
+```
+
+Canary
+
+```bash
+kubectl argo rollouts list rollouts -A
+kubectl argo rollouts dashboard
+
+kubectl apply -f canary/rollout.yaml
+kubectl argo rollouts get rollout rollout-api --namespace canary --watch
+
+kubectl argo rollouts set image rollout-api api=argoproj/rollouts-demo:blue --namespace canary
+kubectl argo rollouts promote rollout-api --namespace canary
+
+kubectl argo rollouts set image rollout-api api=argoproj/rollouts-demo:red --namespace canary
+kubectl argo rollouts abort rollout-api --namespace canary
+kubectl argo rollouts set image rollout-api api=argoproj/rollouts-demo:yellow --namespace canary
+
+kubectl delete -f canary/rollout.yaml
 ```
 
 ## Clean up

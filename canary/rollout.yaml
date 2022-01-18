@@ -15,6 +15,21 @@ spec:
   - port: 8080
     targetPort: 8080
     protocol: TCP
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: preview-api
+  namespace: canary
+spec:
+  selector:
+    app: rollout-api
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+  type: LoadBalancer
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
@@ -29,11 +44,13 @@ spec:
       - setWeight: 20
       - pause: {}
       - setWeight: 40
-      - pause: {duration: 10}
+      - pause: {duration: 30}
       - setWeight: 60
-      - pause: {duration: 10}
+      - pause: {duration: 30}
       - setWeight: 80
-      - pause: {duration: 10}
+      - pause: {duration: 30}
+      stableService: rollout-api
+      canaryService: preview-api
   revisionHistoryLimit: 2
   selector:
     matchLabels:
@@ -45,7 +62,7 @@ spec:
     spec:
       containers:
         - name: api
-          image: andersonstu/testservice:v1
+          image: argoproj/rollouts-demo:orange
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
