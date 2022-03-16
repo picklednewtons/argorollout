@@ -1,0 +1,40 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: mg-test-backend
+  labels:
+    kubernetes.io/metadata.name: default
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: mg-test-backend
+  name: backend
+spec:
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: argoproj/rollouts-demo:orange
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: canary
+spec:
+  selector:
+    app: rollout-api
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+  type: LoadBalancer
